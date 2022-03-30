@@ -61,7 +61,7 @@ public class DiscordBeanPostProcessor implements BeanPostProcessor {
 					.map(publisher -> (Publisher) publisher)
 					.orElse(Mono.empty());
 		})
-		.doOnError(error ->{
+		.doOnError(error -> {
 			error(bean, error);
 			event(method, bean, clazz);
 		})

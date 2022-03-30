@@ -16,6 +16,7 @@ import discord4j.core.event.EventDispatcher;
 import discord4j.core.shard.GatewayBootstrap;
 import discord4j.gateway.GatewayOptions;
 import io.uluru.springboot.discord4j.annotation.EnableDiscord;
+import io.uluru.springboot.discord4j.exception.DiscordLoginFailedException;
 import io.uluru.springboot.discord4j.exception.MissingTokenConfiguration;
 
 @Configuration
@@ -29,7 +30,7 @@ public class DiscordAutoConfiguration extends DiscordClientConfig {
 	@ConditionalOnMissingBean
 	public DiscordClient discordClient(final DiscordProperties properties) {
 		String token = properties.getToken();
-		log.debug("discordClient, token: {}", token);
+		log.info("discordClient, token: {}", token);
 		if (StringUtils.isEmpty(token)) {
 			throw new MissingTokenConfiguration(String.format("token: %s", token));
 		}
@@ -51,6 +52,9 @@ public class DiscordAutoConfiguration extends DiscordClientConfig {
 				.login()
 				.doOnNext(thread -> {
 					awaitThread(thread).awaitThread().start();
+				})
+				.doOnError(error -> {
+					new DiscordLoginFailedException(error);
 				})
 				.block();
 	}
